@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { getProduct, type Product } from "../../shared/catalog";
 
-export interface CartLine { id: string; option?: string; qty: number }
+export interface CartLine { id: string; color: string; size?: string; qty: number }
 export interface CartEntry extends CartLine { product: Product; key: string }
 
 interface CartValue {
@@ -10,7 +10,7 @@ interface CartValue {
   total: number;
   open: boolean;
   setOpen: (open: boolean) => void;
-  add: (id: string, option?: string) => void;
+  add: (id: string, color: string, size?: string) => void;
   setQty: (key: string, qty: number) => void;
   remove: (key: string) => void;
   clear: () => void;
@@ -21,13 +21,13 @@ interface CartValue {
 const STORAGE_KEY = "sn_bag";
 const WISH_KEY = "sn_wishlist";
 const MAX_QTY = 10;
-const keyOf = (line: CartLine) => `${line.id}::${line.option ?? ""}`;
+const keyOf = (line: CartLine) => `${line.id}::${line.color}::${line.size ?? ""}`;
 const CartContext = createContext<CartValue | null>(null);
 
 function load(): CartLine[] {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
-    return Array.isArray(parsed) ? parsed.filter((line) => getProduct(line?.id) && Number.isInteger(line?.qty) && line.qty > 0) : [];
+    return Array.isArray(parsed) ? parsed.filter((line) => getProduct(line?.id)?.colors.some((color) => color.name === line.color) && Number.isInteger(line?.qty) && line.qty > 0) : [];
   } catch {
     return [];
   }
@@ -53,11 +53,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(lines)); } catch { /* almacenamiento no disponible */ }
   }, [lines]);
 
-  const add = useCallback((id: string, option?: string) => {
+  const add = useCallback((id: string, color: string, size?: string) => {
     setLines((current) => {
-      const key = keyOf({ id, option, qty: 1 });
+      const key = keyOf({ id, color, size, qty: 1 });
       if (current.some((line) => keyOf(line) === key)) return current.map((line) => (keyOf(line) === key ? { ...line, qty: Math.min(MAX_QTY, line.qty + 1) } : line));
-      return [...current, { id, option, qty: 1 }];
+      return [...current, { id, color, size, qty: 1 }];
     });
     setOpen(true);
   }, []);

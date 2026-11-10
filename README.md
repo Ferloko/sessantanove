@@ -50,12 +50,24 @@ número de pedido `SN-XXXXXXXX`.
 
 ## Editar el catálogo
 
-Todo está en [`shared/catalog.ts`](shared/catalog.ts): categorías, productos, precios, colores y tallas.
-Para usar fotos (por ejemplo capturas del juego), guárdalas en `public/images/` y añade
-`image: "/images/mi-foto.jpg"` al producto; si no hay foto se muestra la ilustración de la casa.
+Todo está en [`shared/catalog.ts`](shared/catalog.ts):
 
-La **portada** se configura en el mismo archivo (`hero`): texto, enlace y foto a pantalla completa
-(`image: "/images/portada.jpg"`). Sin foto se muestra el monograma de la casa.
+- **`hero`** — portada: texto, enlace y foto a pantalla completa.
+- **`categories`** — las 8 categorías de la cuadrícula 4×2 de la portada. Cada una puede llevar `image`
+  y un bloque `editorial` 2×2 que se intercala en su página.
+- **`lines`** — las colecciones. Cada una genera un bloque en la portada: hero, 4 piezas y los botones
+  «Descubre la colección de Mujer / Hombre».
+- **`products`** — precio, categoría, colección, género, colores, tallas y `big: true` para que la pieza
+  ocupe 2×2 en la cuadrícula de su categoría.
+
+**Fotos** (por ejemplo capturas del juego): guárdalas en `public/images/` y ponlas por color:
+
+```ts
+colors: [{ name: "Nero", hex: "#1b1917", images: ["/images/borsa-nero-1.jpg", "/images/borsa-nero-2.jpg"] }]
+```
+
+La primera foto se usa en las cuadrículas y todas se apilan en la ficha del producto. Un color sin fotos
+muestra la ilustración de la casa en ese color (`monogram: true` le estampa el monograma).
 
 ## Despliegue
 

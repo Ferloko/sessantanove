@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { categories, formatPrice, products } from "../../shared/catalog";
+import { categories, formatPrice, lines, products } from "../../shared/catalog";
 import { useCart } from "../lib/cart";
 import { ProductPlate } from "./ProductArt";
 
@@ -25,7 +25,7 @@ function useOverlay(open: boolean, close: () => void) {
   }, [open, close]);
 }
 
-function Panel({ open, close, side, label, children }: { open: boolean; close: () => void; side: "left" | "right" | "top"; label: string; children: ReactNode }) {
+export function Panel({ open, close, side, label, children }: { open: boolean; close: () => void; side: "left" | "right" | "top"; label: string; children: ReactNode }) {
   useOverlay(open, close);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => { if (open) ref.current?.focus(); }, [open]);
@@ -47,7 +47,7 @@ function SearchPanel({ open, close }: { open: boolean; close: () => void }) {
   const results = useMemo(() => {
     const term = query.trim().toLowerCase();
     if (!term) return [];
-    return products.filter((product) => `${product.name} ${product.category} ${product.description}`.toLowerCase().includes(term)).slice(0, 6);
+    return products.filter((product) => `${product.name} ${product.category} ${product.line} ${product.description}`.toLowerCase().includes(term)).slice(0, 6);
   }, [query]);
   return (
     <Panel open={open} close={close} side="top" label="Buscar">
@@ -94,13 +94,13 @@ function BagPanel() {
             <ul className="bag-lines">
               {entries.map((entry) => (
                 <li key={entry.key} className="bag-line">
-                  <Link href={`/producto/${entry.product.id}`} onClick={close}><ProductPlate product={entry.product} /></Link>
+                  <Link href={`/producto/${entry.product.id}`} onClick={close}><ProductPlate product={entry.product} color={entry.color} /></Link>
                   <div className="bag-line-body">
                     <div className="bag-line-head">
                       <Link href={`/producto/${entry.product.id}`} onClick={close}>{entry.product.name}</Link>
                       <span>{formatPrice(entry.product.price * entry.qty)}</span>
                     </div>
-                    {entry.option && <p className="muted">{entry.product.options?.label}: {entry.option}</p>}
+                    <p className="muted">{[entry.color, entry.size && `Talla ${entry.size}`].filter(Boolean).join(" · ")}</p>
                     <div className="bag-line-foot">
                       <div className="qty" role="group" aria-label={`Cantidad de ${entry.product.name}`}>
                         <button onClick={() => setQty(entry.key, entry.qty - 1)} aria-label="Quitar uno">−</button>
@@ -160,9 +160,13 @@ export function Header() {
 
       <Panel open={menu} close={() => setMenu(false)} side="left" label="Menú">
         <nav className="menu">
-          <span className="eyebrow">Colecciones</span>
+          <span className="eyebrow">Categorías</span>
           <Link href="/coleccion" className="menu-link">Todo</Link>
           {categories.map((category) => <Link key={category.slug} href={`/coleccion/${category.slug}`} className="menu-link">{category.name}</Link>)}
+          <span className="eyebrow menu-gap">Colecciones</span>
+          {lines.map((line) => <Link key={line.slug} href={`/linea/${line.slug}`} className="menu-link menu-link-sm">{line.name}</Link>)}
+          <Link href="/mujer" className="menu-link menu-link-sm">Mujer</Link>
+          <Link href="/hombre" className="menu-link menu-link-sm">Hombre</Link>
           <span className="eyebrow menu-gap">La casa</span>
           <Link href="/favoritos" className="menu-link menu-link-sm">Favoritos</Link>
           <a href="/#maison" className="menu-link menu-link-sm" onClick={() => setMenu(false)}>La Maison</a>
@@ -180,7 +184,7 @@ export function Footer() {
     <footer className="site-footer">
       <div className="footer-grid">
         <div>
-          <span className="eyebrow">Colecciones</span>
+          <span className="eyebrow">Categorías</span>
           {categories.map((category) => <Link key={category.slug} href={`/coleccion/${category.slug}`}>{category.name}</Link>)}
         </div>
         <div>

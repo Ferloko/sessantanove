@@ -2,7 +2,7 @@ import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { DELIVERY_METHODS, formatPrice, getProduct, type CustomerInput, type DeliveryMethod } from "../shared/catalog.js";
 import { fleecaConfig } from "./fleeca.js";
 
-export interface OrderLine { id: string; name: string; option?: string; qty: number; unit: number }
+export interface OrderLine { id: string; name: string; color: string; size?: string; qty: number; unit: number }
 export interface Order {
   ref: string;
   paymentId: string;
@@ -27,12 +27,14 @@ export function priceOrder(rawItems: unknown): { lines: OrderLine[]; total: numb
     if (!product) throw new OrderError("Uno de los artículos ya no está disponible.");
     const qty = Number(item?.qty);
     if (!Number.isInteger(qty) || qty < 1 || qty > MAX_QTY) throw new OrderError(`Cantidad no válida para ${product.name}.`);
-    let option: string | undefined;
-    if (product.options) {
-      option = clean(item?.option, 40);
-      if (!product.options.values.includes(option)) throw new OrderError(`Elige ${product.options.label.toLowerCase()} para ${product.name}.`);
+    const color = clean(item?.color, 40);
+    if (!product.colors.some((option) => option.name === color)) throw new OrderError(`Elige color para ${product.name}.`);
+    let size: string | undefined;
+    if (product.sizes) {
+      size = clean(item?.size, 20);
+      if (!product.sizes.includes(size)) throw new OrderError(`Elige talla para ${product.name}.`);
     }
-    return { id: product.id, name: product.name, option, qty, unit: product.price };
+    return { id: product.id, name: product.name, color, size, qty, unit: product.price };
   });
   const total = lines.reduce((sum, line) => sum + line.unit * line.qty, 0);
   if (total < 1 || total > 99_999_999) throw new OrderError("El importe del pedido supera el límite de la pasarela.");
@@ -84,7 +86,7 @@ export function describeOrder(order: Pick<Order, "lines" | "total" | "customer" 
   const delivery = DELIVERY_METHODS.find((method) => method.id === order.customer.delivery)?.label ?? order.customer.delivery;
   return [
     `**Pedido ${order.ref}** — ${formatPrice(order.total)}`,
-    ...order.lines.map((line) => `• ${line.qty} × ${line.name}${line.option ? ` (${line.option})` : ""} — ${formatPrice(line.unit * line.qty)}`),
+    ...order.lines.map((line) => `• ${line.qty} × ${line.name} (${[line.color, line.size && `talla ${line.size}`].filter(Boolean).join(", ")}) — ${formatPrice(line.unit * line.qty)}`),
     `Cliente: ${order.customer.name} · Tel. ${order.customer.phone}`,
     `Entrega: ${delivery}${order.customer.address ? ` — ${order.customer.address}` : ""}`,
     ...(order.customer.notes ? [`Notas: ${order.customer.notes}`] : []),

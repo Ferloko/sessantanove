@@ -41,7 +41,7 @@ export function Checkout() {
     setError("");
     try {
       const result = await post<{ ref: string; total: number; paymentId: string; paymentUrl: string; order: string }>("/api/checkout", {
-        items: entries.map(({ id, option, qty }) => ({ id, option, qty })),
+        items: entries.map(({ id, color, size, qty }) => ({ id, color, size, qty })),
         customer: { name: form.get("name"), phone: form.get("phone"), delivery, address: form.get("address"), notes: form.get("notes") },
       });
       savePending({ ref: result.ref, total: result.total, paymentId: result.paymentId, order: result.order });
@@ -100,10 +100,10 @@ export function Checkout() {
           <ul>
             {entries.map((entry) => (
               <li key={entry.key} className="summary-line">
-                <ProductPlate product={entry.product} />
+                <ProductPlate product={entry.product} color={entry.color} />
                 <div>
                   <span>{entry.product.name}</span>
-                  <span className="muted small">{entry.option ? `${entry.option} · ` : ""}Cantidad {entry.qty}</span>
+                  <span className="muted small">{[entry.color, entry.size && `Talla ${entry.size}`, `Cantidad ${entry.qty}`].filter(Boolean).join(" · ")}</span>
                 </div>
                 <span>{formatPrice(entry.product.price * entry.qty)}</span>
               </li>
@@ -122,7 +122,7 @@ interface StatusResponse {
   ref: string;
   total: number;
   sandbox: boolean;
-  lines: { id: string; name: string; option?: string; qty: number; unit: number }[];
+  lines: { id: string; name: string; color: string; size?: string; qty: number; unit: number }[];
   customer: { name: string; delivery: DeliveryMethod };
 }
 const RECEIPT_KEY = "sn_receipt";
@@ -184,7 +184,7 @@ export function PaymentResult() {
           {data.sandbox && <p className="notice">Pago de prueba: no se ha movido dinero real.</p>}
           <ul className="receipt">
             {data.lines.map((line) => (
-              <li key={`${line.id}-${line.option}`}><span>{line.qty} × {line.name}{line.option ? ` · ${line.option}` : ""}</span><span>{formatPrice(line.unit * line.qty)}</span></li>
+              <li key={`${line.id}-${line.color}-${line.size}`}><span>{line.qty} × {line.name} · {[line.color, line.size && `Talla ${line.size}`].filter(Boolean).join(" · ")}</span><span>{formatPrice(line.unit * line.qty)}</span></li>
             ))}
             <li className="receipt-total"><span>Total pagado</span><span>{formatPrice(data.total)}</span></li>
           </ul>

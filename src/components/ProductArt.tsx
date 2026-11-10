@@ -1,22 +1,27 @@
 import type { ReactNode } from "react";
-import type { ArtKind, Product, Tone } from "../../shared/catalog";
+import { getColor, type ArtKind, type Product, type ProductColor } from "../../shared/catalog";
 
-/** Ilustraciones a línea de la casa. Se usan cuando un producto no tiene fotografía (`image`). */
+const ring = (cx: number, cy: number, outer: number, inner: number) => {
+  const circle = (r: number) => `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${r * 2} 0a${r} ${r} 0 1 0 ${-r * 2} 0Z`;
+  return `${circle(outer)} ${circle(inner)}`;
+};
+
+/** Ilustraciones de la casa. Se usan cuando un color no tiene fotos; se rellenan con el color elegido. */
 const ART: Record<ArtKind, ReactNode> = {
   bag: (
     <>
+      <path d="M74 92 Q74 48 100 48 Q126 48 126 92 H119 Q119 56 100 56 Q81 56 81 92 Z" />
       <path d="M52 92 L60 150 Q61 158 69 158 H131 Q139 158 140 150 L148 92 Z" />
       <path d="M50 92 H150 V104 Q100 122 50 104 Z" />
-      <path d="M74 92 Q74 48 100 48 Q126 48 126 92" />
       <rect x="93" y="107" width="14" height="10" rx="2" />
     </>
   ),
   tote: (
     <>
+      <path d="M70 84 Q70 38 87 38 Q104 38 104 84 H98 Q98 46 87 46 Q76 46 76 84 Z" />
+      <path d="M96 84 Q96 38 113 38 Q130 38 130 84 H124 Q124 46 113 46 Q102 46 102 84 Z" />
       <path d="M48 84 H152 L144 160 H56 Z" />
-      <path d="M72 84 Q72 40 88 40 Q102 40 102 84" />
-      <path d="M98 84 Q98 40 112 40 Q128 40 128 84" />
-      <path d="M52 100 H148" />
+      <path d="M50 100 H150" />
     </>
   ),
   wallet: (
@@ -37,19 +42,17 @@ const ART: Record<ArtKind, ReactNode> = {
   ),
   watch: (
     <>
+      <path d="M84 72 L88 30 H112 L116 72 Z M84 128 L88 170 H112 L116 128 Z" />
       <circle cx="100" cy="100" r="34" />
-      <circle cx="100" cy="100" r="28" />
+      <circle cx="100" cy="100" r="27" />
       <path d="M100 100 V80 M100 100 L114 108" />
-      <path d="M84 70 L88 30 H112 L116 70 M84 130 L88 170 H112 L116 130" />
-      <path d="M134 96 H140 V104 H134" />
+      <rect x="134" y="96" width="6" height="8" />
     </>
   ),
   scarf: (
     <>
       <path d="M46 52 H154 V148 H46 Z" />
       <path d="M56 62 H144 V138 H56 Z" />
-      <path d="M100 76 Q118 88 100 100 Q82 112 100 124" />
-      <path d="M78 100 Q90 84 100 100 Q110 116 122 100" />
     </>
   ),
   loafer: (
@@ -62,8 +65,7 @@ const ART: Record<ArtKind, ReactNode> = {
   ),
   heel: (
     <>
-      <path d="M40 82 Q52 104 86 118 Q124 134 162 138 Q172 140 172 146 H112 Q84 140 60 118 L52 150 H46 L40 82 Z" />
-      <path d="M40 82 Q60 78 70 96" />
+      <path d="M48 82 C56 96 70 112 96 124 C108 128 116 122 128 118 C146 122 166 134 174 146 L174 148 H112 C92 146 78 138 70 128 L64 154 H57 L54 122 C48 110 46 96 48 82 Z" />
     </>
   ),
   perfume: (
@@ -71,22 +73,20 @@ const ART: Record<ArtKind, ReactNode> = {
       <rect x="62" y="78" width="76" height="92" rx="6" />
       <rect x="86" y="58" width="28" height="20" />
       <rect x="80" y="34" width="40" height="24" rx="3" />
-      <rect x="78" y="108" width="44" height="30" />
+      <rect x="78" y="108" width="44" height="30" className="art-label" />
       <path d="M88 123 H112" />
     </>
   ),
   belt: (
     <>
-      <circle cx="96" cy="104" r="46" />
-      <circle cx="96" cy="104" r="34" />
-      <rect x="126" y="86" width="34" height="36" rx="3" />
+      <path fillRule="evenodd" d={ring(96, 104, 46, 34)} />
+      <rect x="126" y="86" width="34" height="36" rx="3" className="art-metal" />
       <path d="M134 104 H152" />
     </>
   ),
   blazer: (
     <>
-      <path d="M72 34 L44 50 L30 110 L48 116 L54 92 V168 H146 V92 L152 116 L170 110 L156 50 L128 34" />
-      <path d="M72 34 L100 100 L128 34" />
+      <path d="M72 34 L44 50 L30 110 L48 116 L54 92 V168 H146 V92 L152 116 L170 110 L156 50 L128 34 L100 100 Z" />
       <path d="M72 34 L62 66 L78 72 L100 100 M128 34 L138 66 L122 72 L100 100" />
       <path d="M100 100 V168" />
       <circle cx="108" cy="120" r="2.5" /><circle cx="108" cy="142" r="2.5" />
@@ -94,47 +94,52 @@ const ART: Record<ArtKind, ReactNode> = {
   ),
   dress: (
     <>
-      <path d="M82 28 L84 62 Q76 82 82 96 L56 172 H144 L118 96 Q124 82 116 62 L118 28" />
-      <path d="M84 62 Q100 74 116 62" />
+      <path d="M82 28 L84 62 Q76 82 82 96 L56 172 H144 L118 96 Q124 82 116 62 L118 28 L112 28 L110 60 Q100 70 90 60 L88 28 Z" />
       <path d="M82 96 H118" />
     </>
   ),
   ring: (
     <>
-      <circle cx="100" cy="118" r="40" />
-      <circle cx="100" cy="118" r="32" />
-      <path d="M84 70 L92 58 H108 L116 70 L100 86 Z" />
+      <path fillRule="evenodd" d={ring(100, 118, 40, 32)} />
+      <path d="M84 70 L92 58 H108 L116 70 L100 86 Z" className="art-label" />
       <path d="M84 70 H116" />
     </>
   ),
   trunk: (
     <>
+      <path d="M84 62 Q84 44 100 44 Q116 44 116 62 H110 Q110 50 100 50 Q90 50 90 62 Z" />
       <rect x="34" y="62" width="132" height="92" rx="4" />
       <path d="M34 92 H166" />
       <path d="M62 62 V154 M138 62 V154" />
-      <rect x="90" y="84" width="20" height="18" rx="2" />
-      <path d="M84 62 Q84 44 100 44 Q116 44 116 62" />
+      <rect x="90" y="84" width="20" height="18" rx="2" className="art-metal" />
     </>
   ),
 };
 
-export function Art({ kind, className }: { kind: ArtKind; className?: string }) {
+function isDark(hex: string): boolean {
+  const value = parseInt(hex.slice(1), 16);
+  const [r, g, b] = [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.42;
+}
+
+export function Art({ kind, color, className }: { kind: ArtKind; color?: ProductColor; className?: string }) {
+  const stroke = color ? (isDark(color.hex) ? "#a39a8e" : "#2a2521") : "currentColor";
   return (
-    <svg className={className} viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {ART[kind]}
+    <svg className={className} viewBox="0 0 200 200" fill="none" stroke={stroke} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {color && <g fill={color.hex} stroke="none">{ART[kind]}</g>}
+      {color?.monogram && <g fill="url(#sn-mono)" stroke="none" className="art-mono">{ART[kind]}</g>}
+      <g>{ART[kind]}</g>
     </svg>
   );
 }
 
-export function Plate({ art, tone, image, alt, className = "" }: { art: ArtKind; tone: Tone; image?: string; alt?: string; className?: string }) {
+/** Lámina de producto: foto si el color la tiene; si no, la ilustración en ese color. `shot` elige la foto o el encuadre. */
+export function ProductPlate({ product, color, shot = 0, className = "" }: { product: Product; color?: string | null; shot?: number; className?: string }) {
+  const chosen = getColor(product, color);
+  const image = chosen.images?.[shot];
   return (
-    <div className={`plate tone-${tone} ${className}`}>
-      {tone === "monogram" && !image && <div className="monogram" aria-hidden="true" />}
-      {image ? <img src={image} alt={alt ?? ""} loading="lazy" /> : <Art kind={art} className="plate-art" />}
+    <div className={`plate ${!image && shot > 0 ? "plate-detail" : ""} ${className}`}>
+      {image ? <img src={image} alt={`${product.name}, ${chosen.name}`} loading="lazy" /> : <Art kind={product.art} color={chosen} className="plate-art" />}
     </div>
   );
 }
-
-export const ProductPlate = ({ product, className }: { product: Product; className?: string }) => (
-  <Plate art={product.art} tone={product.tone} image={product.image} alt={product.name} className={className} />
-);
