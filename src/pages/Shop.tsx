@@ -34,7 +34,7 @@ export function Home() {
   return (
     <main>
       <section className="hero">
-        <div className="hero-numeral" aria-hidden="true">69</div>
+        <div className="hero-pattern" aria-hidden="true"><div className="monogram" /></div>
         <div className="hero-copy">
           <span className="eyebrow">Collezione Autunno · Inverno</span>
           <h1 className="hero-title">L’arte di <em>farsi notare</em></h1>
@@ -79,6 +79,7 @@ export function Home() {
       </section>
 
       <section className="maison" id="maison">
+        <div className="monogram" aria-hidden="true" />
         <span className="eyebrow">La Maison</span>
         <p className="maison-quote">«El lujo no se anuncia. <em>Se reconoce.</em>»</p>
         <p className="maison-text">

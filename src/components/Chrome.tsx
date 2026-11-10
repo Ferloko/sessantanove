@@ -192,6 +192,7 @@ export function Footer() {
           <p>Pago seguro mediante Fleeca Bank.</p>
         </div>
       </div>
+      <span className="sn-mark" aria-hidden="true" />
       <div className="footer-mark">Sessanta Nove</div>
       <p className="footer-legal">© {new Date().getFullYear()} Sessanta Nove. Sitio de ficción para un servidor de roleplay: marca, productos y pagos pertenecen al juego.</p>
     </footer>

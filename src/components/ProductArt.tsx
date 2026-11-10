@@ -129,6 +129,7 @@ export function Art({ kind, className }: { kind: ArtKind; className?: string }) 
 export function Plate({ art, tone, image, alt, className = "" }: { art: ArtKind; tone: Tone; image?: string; alt?: string; className?: string }) {
   return (
     <div className={`plate tone-${tone} ${className}`}>
+      {tone === "monogram" && !image && <div className="monogram" aria-hidden="true" />}
       {image ? <img src={image} alt={alt ?? ""} loading="lazy" /> : <Art kind={art} className="plate-art" />}
     </div>
   );

@@ -8,6 +8,7 @@
  *  - `price`  → dólares del juego, entero, sin decimales.
  *  - `image`  → opcional. Ruta a una foto en /public/images (p. ej. "/images/borsa-notte.jpg").
  *               Si no hay foto se muestra la ilustración indicada en `art`.
+ *  - `tone`   → color de fondo de la lámina; "monogram" pone el monograma de la casa en oro.
  *  - `options`→ opcional. Colores o tallas entre los que elige el cliente.
  */
 
@@ -15,7 +16,7 @@ export type ArtKind =
   | "bag" | "tote" | "wallet" | "sunglasses" | "watch" | "scarf" | "loafer" | "heel"
   | "perfume" | "belt" | "blazer" | "dress" | "ring" | "trunk";
 
-export type Tone = "sand" | "stone" | "blush" | "sage" | "ink" | "bordeaux";
+export type Tone = "sand" | "stone" | "blush" | "sage" | "ink" | "bordeaux" | "monogram";
 
 export interface Category {
   slug: string;
@@ -42,7 +43,7 @@ export interface Product {
 export const CURRENCY = "$";
 
 export const categories: Category[] = [
-  { slug: "bolsos", name: "Bolsos", tagline: "Marroquinería hecha a mano", art: "bag", tone: "sand" },
+  { slug: "bolsos", name: "Bolsos", tagline: "Marroquinería hecha a mano", art: "bag", tone: "monogram" },
   { slug: "pret-a-porter", name: "Prêt-à-porter", tagline: "Sastrería de temporada", art: "blazer", tone: "stone" },
   { slug: "calzado", name: "Calzado", tagline: "Del atelier a la calle", art: "loafer", tone: "sage" },
   { slug: "accesorios", name: "Accesorios", tagline: "El detalle que firma", art: "sunglasses", tone: "blush" },
@@ -58,10 +59,10 @@ export const products: Product[] = [
     options: { label: "Color", values: ["Nero", "Cognac", "Avorio"] },
   },
   {
-    id: "cabas-riviera", name: "Cabas Riviera", category: "bolsos", price: 14200, art: "tote", tone: "stone",
-    description: "Un cabas amplio y ligero para el día. Lona encerada con ribetes de piel natural que se patina con el tiempo.",
-    details: ["Lona encerada y piel vaquetilla", "Bolsillo interior con cremallera", "38 × 30 × 15 cm"],
-    options: { label: "Color", values: ["Sabbia", "Nero"] },
+    id: "cabas-monogramma", name: "Cabas Monogramma", category: "bolsos", price: 14200, art: "tote", tone: "monogram", isNew: true,
+    description: "Un cabas amplio y ligero en la lona Monogramma de la casa: la SN, el diamante, la estrella y la nudillera estampados en oro.",
+    details: ["Lona Monogramma y piel vaquetilla", "Bolsillo interior con cremallera", "38 × 30 × 15 cm"],
+    options: { label: "Color", values: ["Avorio e oro", "Nero e oro"] },
   },
   {
     id: "malle-sessanta", name: "Malle Sessanta", category: "bolsos", price: 64000, art: "trunk", tone: "ink", isNew: true,

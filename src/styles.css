@@ -5,6 +5,7 @@
   --paper: #ffffff;
   --ivory: #f7f4ef;
   --brass: #8c6f45;
+  --gold: #ac905c;
   --error: #9b2c2c;
   --sans: "Jost", "Futura", "Century Gothic", system-ui, sans-serif;
   --serif: "Cormorant Garamond", "Didot", Georgia, serif;
@@ -116,10 +117,19 @@ a:hover > .plate .plate-art, a:hover > .plate img, .card:hover .plate-art, .card
 .tone-sage { --tone: #dfe3d8; }
 .tone-ink { --tone: #1c1917; --tone-ink: #e9dfcd; }
 .tone-bordeaux { --tone: #4a161b; --tone-ink: #f0dcd2; }
+.tone-monogram { --tone: #fbf9f4; }
+.tone-monogram > .monogram { color: var(--gold); opacity: 0.5; --mono-size: 44%; }
+.tone-monogram > .plate-art { position: relative; filter: drop-shadow(0 0 10px #fbf9f4) drop-shadow(0 0 10px #fbf9f4); }
+.tone-monogram > .plate-art * { fill: #fbf9f4; }
+
+/* ── Monograma de la casa (public/monogram.svg usado como máscara: el color es `color`) ── */
+.monogram { position: absolute; inset: 0; background: currentColor; -webkit-mask: url("/monogram.svg") center / var(--mono-size, 150px); mask: url("/monogram.svg") center / var(--mono-size, 150px); pointer-events: none; }
+.sn-mark { display: block; width: var(--mark-size, 44px); aspect-ratio: 1; background: currentColor; -webkit-mask: url("/sn.svg") center / contain no-repeat; mask: url("/sn.svg") center / contain no-repeat; }
 
 /* ── Portada ── */
 .hero { position: relative; margin-top: calc(var(--header-h) * -1); min-height: min(100svh, 880px); display: flex; align-items: flex-end; padding: 140px var(--gutter) clamp(56px, 9vh, 110px); background: radial-gradient(120% 90% at 80% 20%, #3a2a22 0%, #1b1512 55%, #100d0b 100%); color: #fff; overflow: hidden; }
-.hero-numeral { position: absolute; right: -2vw; top: 50%; transform: translateY(-52%); font-family: var(--serif); font-style: italic; font-weight: 300; font-size: clamp(300px, 58vw, 900px); line-height: 0.8; letter-spacing: -0.04em; color: transparent; -webkit-text-stroke: 1px rgba(233, 223, 205, 0.28); user-select: none; pointer-events: none; }
+.hero-pattern { position: absolute; inset: 0; color: var(--gold); opacity: 0.55; -webkit-mask-image: linear-gradient(100deg, transparent 28%, #000 78%); mask-image: linear-gradient(100deg, transparent 28%, #000 78%); pointer-events: none; }
+.hero-pattern .monogram { --mono-size: clamp(150px, 15vw, 230px); }
 .hero-copy { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; max-width: 640px; }
 .hero-copy .eyebrow { color: rgba(255, 255, 255, 0.75); }
 .hero-title { font-family: var(--serif); font-weight: 300; font-size: clamp(46px, 8vw, 104px); line-height: 0.98; letter-spacing: -0.01em; }
@@ -148,7 +158,9 @@ a:hover > .plate .plate-art, a:hover > .plate img, .card:hover .plate-art, .card
 .card-name { font-size: 15px; font-weight: 400; }
 .card-price { font-size: 14px; color: var(--ink-soft); }
 
-.maison { display: flex; flex-direction: column; align-items: center; gap: 28px; text-align: center; padding: clamp(80px, 11vw, 160px) var(--gutter); background: var(--ink); color: #f1eadf; }
+.maison { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 28px; text-align: center; padding: clamp(80px, 11vw, 160px) var(--gutter); background: var(--ink); color: #f1eadf; }
+.maison > .monogram { color: var(--gold); opacity: 0.1; --mono-size: 170px; }
+.maison > :not(.monogram) { position: relative; }
 .maison .eyebrow { color: rgba(241, 234, 223, 0.7); }
 .maison-quote { font-family: var(--serif); font-weight: 300; font-size: clamp(32px, 5.4vw, 68px); line-height: 1.1; letter-spacing: 0; max-width: 16ch; text-wrap: balance; }
 .maison-text { max-width: 58ch; color: rgba(241, 234, 223, 0.78); font-size: 16px; }
@@ -230,7 +242,8 @@ a:hover > .plate .plate-art, a:hover > .plate img, .card:hover .plate-art, .card
 .footer-grid > div { display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--ink-soft); }
 .footer-grid .eyebrow { color: var(--ink); margin-bottom: 8px; }
 .footer-grid a:hover { color: var(--ink); }
-.footer-mark { text-align: center; font-size: clamp(18px, 4vw, 40px); letter-spacing: 0.5em; text-transform: uppercase; padding: clamp(56px, 8vw, 110px) 0 28px 0.5em; white-space: nowrap; }
+.site-footer .sn-mark { --mark-size: 56px; margin: clamp(56px, 8vw, 110px) auto 0; color: var(--gold); }
+.footer-mark { text-align: center; font-size: clamp(18px, 4vw, 40px); letter-spacing: 0.5em; text-transform: uppercase; padding: 24px 0 28px 0.5em; white-space: nowrap; }
 .footer-legal { text-align: center; font-size: 12px; color: var(--ink-soft); max-width: 70ch; margin: 0 auto; }
 
 /* ── Adaptación ── */
@@ -251,7 +264,7 @@ a:hover > .plate .plate-art, a:hover > .plate img, .card:hover .plate-art, .card
   .services, .footer-grid { grid-template-columns: 1fr; }
   .service + .service { border-left: 0; border-top: 1px solid var(--line); }
   .summary { position: static; order: -1; }
-  .hero-numeral { right: -12vw; font-size: 92vw; top: 38%; }
+  .hero-pattern { opacity: 0.4; -webkit-mask-image: linear-gradient(180deg, #000 20%, transparent 62%); mask-image: linear-gradient(180deg, #000 20%, transparent 62%); }
   .footer-mark { letter-spacing: 0.3em; padding-left: 0.3em; }
 }
 @media (prefers-reduced-motion: reduce) {

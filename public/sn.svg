@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-30 -30 60 60">
+  <g>
+      <path d="M-20.5 -24 H-15.5 L20.5 24 H15.5Z"/>
+      <path d="M-20.5 -24 H-17.3 V24 H-20.5Z M17.3 -24 H20.5 V24 H17.3Z"/>
+      <path d="M-27 10 H-11 V12.4 H-27Z M11 -12.4 H27 V-10 H11Z M-24 -24 H-15 V-22 H-24Z M15 22 H24 V24 H15Z M-24 22 H-14 V24 H-24Z M14 -24 H24 V-22 H14Z"/>
+      <path fill="none" stroke="#000" stroke-width="5.4" d="M10.5 -14 C8 -27 -10.5 -26 -10.5 -13 C-10.5 0 11 -1 11 13 C11 26 -8.5 27 -11 13"/>
+    </g>
+</svg>
