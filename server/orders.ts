@@ -1,5 +1,5 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { DELIVERY_METHODS, formatPrice, getProduct, type CustomerInput, type DeliveryMethod } from "../shared/catalog.js";
+import { applyContent, DELIVERY_METHODS, fetchPublishedContent, formatPrice, getProduct, type CustomerInput, type DeliveryMethod } from "../shared/catalog.js";
 import { fleecaConfig } from "./fleeca.js";
 
 export interface OrderLine { id: string; name: string; color: string; size?: string; qty: number; unit: number }
@@ -13,6 +13,15 @@ export interface Order {
 }
 
 export class OrderError extends Error {}
+
+let syncedAt = 0;
+/** Carga en el servidor el catálogo publicado desde el modo Creador (con 20 s de caché) para cobrar los precios vigentes. */
+export async function syncCatalog(): Promise<void> {
+  if (Date.now() - syncedAt < 20_000) return;
+  const published = await fetchPublishedContent();
+  if (published) applyContent(published);
+  syncedAt = Date.now();
+}
 
 const MAX_QTY = 10;
 const MAX_LINES = 30;

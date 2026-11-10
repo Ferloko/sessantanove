@@ -10,6 +10,7 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "wouter": "^3.7.1"

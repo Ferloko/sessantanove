@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { getProduct, type Product } from "../../shared/catalog";
+import { useContentVersion } from "./content";
 
 export interface CartLine { id: string; color: string; size?: string; qty: number }
 export interface CartEntry extends CartLine { product: Product; key: string }
@@ -36,6 +37,7 @@ function load(): CartLine[] {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>(load);
   const [open, setOpen] = useState(false);
+  const version = useContentVersion();
   const [wishlist, setWishlist] = useState<string[]>(() => {
     try {
       const parsed = JSON.parse(localStorage.getItem(WISH_KEY) ?? "[]");
@@ -70,7 +72,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CartValue>(() => {
     const entries = lines.flatMap((line) => {
       const product = getProduct(line.id);
-      return product ? [{ ...line, product, key: keyOf(line) }] : [];
+      return product?.colors.some((color) => color.name === line.color) ? [{ ...line, product, key: keyOf(line) }] : [];
     });
     return {
       entries,
@@ -78,7 +80,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       total: entries.reduce((sum, entry) => sum + entry.qty * entry.product.price, 0),
       open, setOpen, add, setQty, remove, clear, wishlist, toggleWish,
     };
-  }, [lines, open, add, setQty, remove, clear, wishlist, toggleWish]);
+  }, [lines, open, add, setQty, remove, clear, wishlist, toggleWish, version]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

@@ -48,26 +48,24 @@ Prueba primero con `FLEECA_MODE=0` y pasa a `1` cuando todo funcione.
 No hay base de datos: los pedidos llegan al canal de Discord (pendiente → pagado) con cliente, artículos y
 número de pedido `SN-XXXXXXXX`.
 
-## Editar el catálogo
+## Modo Creador (`/atelier`)
 
-Todo está en [`shared/catalog.ts`](shared/catalog.ts):
+La tienda se edita desde dentro, sin tocar código, en la página oculta **`/atelier`** (no hay ningún
+enlace a ella; se entra escribiendo la dirección).
 
-- **`hero`** — portada: texto, enlace y foto a pantalla completa.
-- **`categories`** — las 8 categorías de la cuadrícula 4×2 de la portada. Cada una puede llevar `image`
-  y un bloque `editorial` 2×2 que se intercala en su página.
-- **`lines`** — las colecciones. Cada una genera un bloque en la portada: hero, 4 piezas y los botones
-  «Descubre la colección de Mujer / Hombre».
-- **`products`** — precio, categoría, colección, género, colores, tallas y `big: true` para que la pieza
-  ocupe 2×2 en la cuadrícula de su categoría.
+1. La primera vez pulsa **«Primera vez: crear mi cuenta»**, regístrate con un correo autorizado y abre el
+   enlace de confirmación que llega por correo. Después inicia sesión.
+2. Edita **Portada**, **Categorías** (foto y bloques editoriales 2×2), **Colecciones** y **Productos**
+   (precio, colores, fotos por color, tallas, orden en la cuadrícula y tamaño 2×2).
+3. **Vista previa** enseña el borrador en la tienda solo en tu navegador. **Publicar** lo guarda para todos.
 
-**Fotos** (por ejemplo capturas del juego): guárdalas en `public/images/` y ponlas por color:
+El contenido publicado y las fotos se guardan en el proyecto Supabase «sessanta-nove»
+([`supabase/schema.sql`](supabase/schema.sql)). Solo pueden publicar los correos de la tabla `sn_admins`;
+para autorizar a otra persona, añade su correo ahí desde el editor SQL de Supabase. El servidor lee los
+precios publicados antes de cobrar.
 
-```ts
-colors: [{ name: "Nero", hex: "#1b1917", images: ["/images/borsa-nero-1.jpg", "/images/borsa-nero-2.jpg"] }]
-```
-
-La primera foto se usa en las cuadrículas y todas se apilan en la ficha del producto. Un color sin fotos
-muestra la ilustración de la casa en ese color (`monogram: true` le estampa el monograma).
+Mientras no se publique nada, la tienda muestra el contenido inicial de
+[`shared/seed.ts`](shared/seed.ts) (66+ piezas de prueba, 8 o más por categoría).
 
 ## Despliegue
 

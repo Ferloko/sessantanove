@@ -176,9 +176,9 @@ export function Collection({ category: categorySlug, line: lineSlug, gender }: {
   const tabs = TABS.filter(([id]) => !genderOnly || id === "todo" || id === "novedad");
   // Las piezas 2×2 y el bloque editorial solo se usan en la vista por defecto, para no descolocar los filtros.
   const curated = tab === "todo" && sort === "destacados";
-  const editorial = curated ? category?.editorial : undefined;
+  const editorials = (curated && category?.editorials) || [];
   // Si la última fila de 4 queda incompleta se rellena con celdas de la casa para que no haya huecos.
-  const units = list.reduce((sum, product) => sum + (curated && category && product.big ? 4 : 1), editorial ? 4 : 0);
+  const units = list.reduce((sum, product) => sum + (curated && category && product.big ? 4 : 1), editorials.length * 4);
   const fillers = (4 - (units % 4)) % 4;
 
   return (
@@ -199,11 +199,11 @@ export function Collection({ category: categorySlug, line: lineSlug, gender }: {
         <div className="cells">
           {list.map((product, position) => (
             <Fragment key={product.id}>
-              {editorial && editorial.position === position && <EditorialCell editorial={editorial} />}
+              {editorials.filter((block) => block.position === position).map((block) => <EditorialCell key={block.title} editorial={block} />)}
               <ProductCell product={product} big={curated && Boolean(category) && product.big} />
             </Fragment>
           ))}
-          {editorial && editorial.position >= list.length && <EditorialCell editorial={editorial} />}
+          {editorials.filter((block) => block.position >= list.length).map((block) => <EditorialCell key={block.title} editorial={block} />)}
           {Array.from({ length: fillers }, (_, index) => <div key={`filler-${index}`} className="cell cell-filler" aria-hidden="true"><span className="sn-mark" /></div>)}
         </div>
       )}

@@ -114,6 +114,72 @@ const ART: Record<ArtKind, ReactNode> = {
       <rect x="90" y="84" width="20" height="18" rx="2" className="art-metal" />
     </>
   ),
+  clutch: (
+    <>
+      <rect x="44" y="80" width="112" height="60" rx="6" />
+      <path d="M44 86 Q44 80 50 80 H150 Q156 80 156 86 L100 118 Z" />
+      <circle cx="100" cy="116" r="4.5" className="art-metal" />
+    </>
+  ),
+  cardholder: (
+    <>
+      <rect x="58" y="68" width="84" height="64" rx="4" />
+      <path d="M58 84 H142 M58 98 H142" />
+    </>
+  ),
+  coat: (
+    <>
+      <path d="M74 28 L46 42 L32 120 L50 124 L56 92 V178 H144 V92 L150 124 L168 120 L154 42 L126 28 L100 84 Z" />
+      <path d="M74 28 L64 58 L80 64 L100 84 M126 28 L136 58 L120 64 L100 84" />
+      <path d="M100 84 V178 M56 118 H144" />
+    </>
+  ),
+  shirt: (
+    <>
+      <path d="M76 34 L46 48 L34 86 L52 92 L58 76 V166 H142 V76 L148 92 L166 86 L154 48 L124 34 Q100 50 76 34 Z" />
+      <path d="M76 34 L100 60 L124 34" className="art-line" />
+      <path d="M100 60 V166" />
+    </>
+  ),
+  boot: (
+    <>
+      <path d="M70 38 H110 V100 Q130 108 156 118 Q168 122 168 136 V144 H112 L104 136 H96 V144 H70 Z" />
+      <path d="M70 52 H110" />
+    </>
+  ),
+  sneaker: (
+    <>
+      <path d="M34 120 Q34 98 50 96 L62 104 Q84 100 98 84 L112 96 Q130 114 158 118 Q170 120 170 132 V138 H34 Z" />
+      <path d="M34 138 H170 V147 H34 Z" className="art-label" />
+      <path d="M92 96 L104 104 M84 103 L96 112" />
+    </>
+  ),
+  necklace: (
+    <>
+      <path d="M58 44 Q58 130 100 130 Q142 130 142 44" className="art-line" />
+      <path d="M100 130 L111 145 L100 162 L89 145 Z" />
+    </>
+  ),
+  bracelet: (
+    <>
+      <path fillRule="evenodd" d={ring(100, 100, 46, 37)} />
+      <circle cx="100" cy="150" r="7" className="art-metal" />
+    </>
+  ),
+  earrings: (
+    <>
+      <circle cx="74" cy="66" r="5" /><path d="M74 71 L87 108 Q74 128 61 108 Z" />
+      <circle cx="126" cy="66" r="5" /><path d="M126 71 L139 108 Q126 128 113 108 Z" />
+    </>
+  ),
+  candle: (
+    <>
+      <rect x="62" y="84" width="76" height="84" rx="6" />
+      <rect x="76" y="108" width="48" height="34" className="art-label" />
+      <path d="M100 84 V72" className="art-line" />
+      <path d="M100 50 Q110 62 100 72 Q90 62 100 50 Z" className="art-metal" />
+    </>
+  ),
 };
 
 function isDark(hex: string): boolean {

@@ -1,25 +1,21 @@
 /**
  * CATÁLOGO DE SESSANTA NOVE
  * ─────────────────────────
- * Única fuente de verdad de la tienda: la usan la web y el servidor (que recalcula el total
- * antes de cobrar, así nadie puede manipular precios).
+ * Tipos, contenido «en vivo» y utilidades. Lo usan la web y el servidor (que recalcula el total antes
+ * de cobrar, así nadie puede manipular precios).
  *
- * PRODUCTOS (`products`)
- *  - `price`    → dólares del juego, entero.
- *  - `category` → slug de `categories`.   `line` → slug de `lines` (colección).
- *  - `gender`   → "mujer", "hombre" o "unisex" (unisex aparece en ambos).
- *  - `colors`   → al menos uno. Cada color puede llevar sus propias fotos:
- *                 { name: "Nero", hex: "#1b1917", images: ["/images/borsa-nero-1.jpg", "/images/borsa-nero-2.jpg"] }
- *                 Sin fotos se dibuja la ilustración `art` en ese color; `monogram: true` le estampa el monograma.
- *  - `sizes`    → opcional. Tallas.
- *  - `big`      → opcional. Ocupa 2×2 en la cuadrícula de su categoría.
- *
- * FOTOS: guárdalas en /public/images y usa la ruta "/images/archivo.jpg".
+ * El contenido inicial está en `seed.ts`. Lo que se publique desde el modo Creador (/atelier) se guarda
+ * en Supabase y sustituye a ese contenido inicial mediante `applyContent`.
  */
+import { CONTENT_ROW, SUPABASE_KEY, SUPABASE_URL } from "./config.js";
+import { seed } from "./seed.js";
 
-export type ArtKind =
-  | "bag" | "tote" | "wallet" | "sunglasses" | "watch" | "scarf" | "loafer" | "heel"
-  | "perfume" | "belt" | "blazer" | "dress" | "ring" | "trunk";
+export const ART_KINDS = [
+  "bag", "tote", "clutch", "trunk", "wallet", "cardholder", "blazer", "coat", "shirt", "dress",
+  "loafer", "heel", "boot", "sneaker", "belt", "scarf", "sunglasses", "watch", "ring", "necklace",
+  "bracelet", "earrings", "perfume", "candle",
+] as const;
+export type ArtKind = (typeof ART_KINDS)[number];
 
 export type Gender = "mujer" | "hombre" | "unisex";
 
@@ -34,217 +30,116 @@ export interface Product {
   price: number;
   art: ArtKind;
   isNew?: boolean;
+  /** Ocupa 2×2 en la cuadrícula de su categoría. */
   big?: boolean;
   description: string;
   details: string[];
+  /** Al menos uno. Un color con `images` muestra fotos; sin ellas, la ilustración `art` en ese color. */
   colors: ProductColor[];
   sizes?: string[];
 }
 
-/** Bloque editorial 2×2 que se intercala en la cuadrícula de una categoría (`position` = tras cuántas piezas). */
+/** Bloque editorial 2×2 intercalado en la cuadrícula de una categoría (`position` = tras cuántas piezas). */
 export interface Editorial { title: string; text?: string; image?: string; background: string; dark?: boolean; position: number }
-
-export interface Category { slug: string; name: string; image?: string; editorial?: Editorial }
-
-/** Colección (línea). Cada una tiene su bloque en la portada: hero + 4 piezas + botones Mujer/Hombre. */
+export interface Category { slug: string; name: string; image?: string; editorials?: Editorial[] }
+/** Colección. Cada una tiene su bloque en la portada: hero + 4 piezas + botones Mujer/Hombre. */
 export interface Line { slug: string; name: string; eyebrow: string; title: string; image?: string; background: string }
+export interface Hero { image: string; eyebrow: string; title: string; cta: string; href: string }
+export interface Content { hero: Hero; lines: Line[]; categories: Category[]; products: Product[] }
 
 export const CURRENCY = "$";
 
-/** PORTADA. `image` vacío → se muestra el monograma de la casa. */
-export const hero = {
-  image: "",
-  eyebrow: "Nueva colección",
-  title: "Collezione Autunno–Inverno: el Monogramma",
-  cta: "Descubrir la colección",
-  href: "/linea/monogramma",
-};
+// ── Contenido en vivo (se muta en el sitio para que todos los módulos vean lo mismo) ──
+export const hero: Hero = { ...seed.hero };
+export const lines: Line[] = [...seed.lines];
+export const categories: Category[] = [...seed.categories];
+export const products: Product[] = [...seed.products];
 
-export const lines: Line[] = [
-  { slug: "monogramma", name: "Monogramma", eyebrow: "La lona de la casa", title: "Monogramma: la firma en cada pieza", background: "radial-gradient(120% 90% at 70% 25%, #4a3324 0%, #241812 60%, #140e0b 100%)" },
-  { slug: "notte", name: "Notte", eyebrow: "Colección de noche", title: "Notte: negro, burdeos y oro", background: "radial-gradient(120% 90% at 30% 20%, #5a1e25 0%, #241013 60%, #0e0809 100%)" },
-  { slug: "riviera", name: "Riviera", eyebrow: "Colección de verano", title: "Riviera: la luz de la costa", background: "radial-gradient(120% 90% at 60% 20%, #8fb0ba 0%, #557a87 60%, #2f4c57 100%)" },
-];
+const text = (value: unknown, max: number) => (typeof value === "string" ? value.trim().slice(0, max) : "");
+const slug = (value: unknown) => text(value, 60).toLowerCase().replace(/[^a-z0-9-]/g, "");
+const url = (value: unknown) => { const clean = text(value, 600); return /^(https:\/\/|\/)[^\s"'<>]*$/.test(clean) ? clean : ""; };
+const css = (value: unknown, fallback: string) => { const clean = text(value, 300); return clean && !/[;{}<>]|url\(/i.test(clean) ? clean : fallback; };
+const list = <T,>(value: unknown, max: number, map: (item: any) => T | null): T[] =>
+  (Array.isArray(value) ? value.slice(0, max).map(map).filter((item): item is T => item !== null) : []);
 
-export const categories: Category[] = [
-  { slug: "bolsos", name: "Bolsos", editorial: { title: "Hecho a mano, pieza a pieza", text: "Cada bolso pasa por las manos de un solo artesano.", background: "linear-gradient(160deg, #cfe0ea, #eef4f7)", position: 3 } },
-  { slug: "carteras", name: "Carteras", editorial: { title: "Pequeña marroquinería", text: "El Monogramma, en formato de bolsillo.", background: "linear-gradient(160deg, #4a3324, #1d1512)", dark: true, position: 3 } },
-  { slug: "pret-a-porter", name: "Prêt-à-porter" },
-  { slug: "calzado", name: "Calzado" },
-  { slug: "accesorios", name: "Accesorios", editorial: { title: "El detalle que firma", background: "linear-gradient(160deg, #e9dfcd, #f6f1e7)", position: 2 } },
-  { slug: "relojeria", name: "Relojería" },
-  { slug: "joyeria", name: "Joyería" },
-  { slug: "fragancias", name: "Fragancias" },
-];
+/** Valida y limpia contenido externo (Supabase, borradores). Devuelve null si no es utilizable. */
+export function normalizeContent(raw: any): Content | null {
+  if (!raw || typeof raw !== "object") return null;
+  const cleanLines = list<Line>(raw.lines, 12, (item) => {
+    const id = slug(item?.slug); const name = text(item?.name, 40);
+    return id && name ? { slug: id, name, eyebrow: text(item.eyebrow, 60), title: text(item.title, 90) || name, image: url(item.image) || undefined, background: css(item.background, "#1d1512") } : null;
+  });
+  const cleanCategories = list<Category>(raw.categories, 16, (item) => {
+    const id = slug(item?.slug); const name = text(item?.name, 40);
+    if (!id || !name) return null;
+    const editorials = list<Editorial>(item.editorials, 6, (block) => {
+      const title = text(block?.title, 80);
+      return title ? { title, text: text(block.text, 160) || undefined, image: url(block.image) || undefined, background: css(block.background, "#ece5d8"), dark: Boolean(block.dark) || undefined, position: Math.max(0, Math.min(200, Math.round(Number(block.position)) || 0)) } : null;
+    });
+    return { slug: id, name, image: url(item.image) || undefined, editorials: editorials.length ? editorials : undefined };
+  });
+  const seen = new Set<string>();
+  const cleanProducts = list<Product>(raw.products, 600, (item) => {
+    const id = slug(item?.id); const name = text(item?.name, 60); const price = Math.round(Number(item?.price));
+    if (!id || seen.has(id) || !name || !Number.isFinite(price) || price < 1 || price > 9_999_999) return null;
+    const colors = list<ProductColor>(item.colors, 12, (color) => {
+      const colorName = text(color?.name, 40); const hex = text(color?.hex, 7);
+      if (!colorName || !/^#[0-9a-f]{6}$/i.test(hex)) return null;
+      const images = list<string>(color.images, 8, (image) => url(image) || null);
+      return { name: colorName, hex, monogram: Boolean(color.monogram) || undefined, images: images.length ? images : undefined };
+    }).filter((color, index, all) => all.findIndex((other) => other.name === color.name) === index);
+    if (!colors.length || !cleanCategories.some((category) => category.slug === item.category)) return null;
+    seen.add(id);
+    const sizes = [...new Set(list<string>(item.sizes, 20, (size) => text(size, 12) || null))];
+    return {
+      id, name, price, colors,
+      category: item.category,
+      line: cleanLines.some((line) => line.slug === item.line) ? item.line : "",
+      gender: item.gender === "mujer" || item.gender === "hombre" ? item.gender : "unisex",
+      art: (ART_KINDS as readonly string[]).includes(item.art) ? item.art : "bag",
+      isNew: Boolean(item.isNew) || undefined,
+      big: Boolean(item.big) || undefined,
+      description: text(item.description, 600),
+      details: list<string>(item.details, 10, (detail) => text(detail, 120) || null),
+      sizes: sizes.length ? sizes : undefined,
+    };
+  });
+  if (!cleanCategories.length) return null;
+  const href = text(raw.hero?.href, 200);
+  return {
+    hero: { image: url(raw.hero?.image), eyebrow: text(raw.hero?.eyebrow, 60), title: text(raw.hero?.title, 120) || "Sessanta Nove", cta: text(raw.hero?.cta, 60) || "Descubrir la colección", href: href.startsWith("/") ? href : "/coleccion" },
+    lines: cleanLines, categories: cleanCategories, products: cleanProducts,
+  };
+}
 
-// ── Paleta de la casa ──
-const NERO = { name: "Nero", hex: "#1b1917" };
-const COGNAC = { name: "Cognac", hex: "#9a5b2e" };
-const AVORIO = { name: "Avorio", hex: "#efe7d8" };
-const BORDEAUX = { name: "Bordeaux", hex: "#5a1a20" };
-const SABBIA = { name: "Sabbia", hex: "#d9c7a6" };
-const BLU = { name: "Blu notte", hex: "#1f2a44" };
-const SALVIA = { name: "Salvia", hex: "#9aa58a" };
-const ROSA = { name: "Rosa", hex: "#e6c3c0" };
-const ORO = { name: "Oro", hex: "#c9ab72" };
-const ARGENTO = { name: "Argento", hex: "#c9c9c7" };
-const MONO_EBANO = { name: "Monogramma Ebano", hex: "#3b2a20", monogram: true };
-const MONO_AVORIO = { name: "Monogramma Avorio", hex: "#f3eee4", monogram: true };
-const MONO_BLU = { name: "Monogramma Blu", hex: "#1f2a44", monogram: true };
+/** Sustituye el contenido en vivo. Devuelve false si los datos no son válidos (y no cambia nada). */
+export function applyContent(raw: unknown): boolean {
+  const content = normalizeContent(raw);
+  if (!content) return false;
+  Object.assign(hero, content.hero);
+  lines.splice(0, lines.length, ...content.lines);
+  categories.splice(0, categories.length, ...content.categories);
+  products.splice(0, products.length, ...content.products);
+  return true;
+}
 
-const SHOES_M = ["39", "40", "41", "42", "43", "44", "45"];
-const SHOES_W = ["35", "36", "37", "38", "39", "40", "41"];
-const RINGS = ["48", "50", "52", "54", "56", "58"];
+export const currentContent = (): Content => JSON.parse(JSON.stringify({ hero, lines, categories, products }));
 
-export const products: Product[] = [
-  // ── Monogramma ──
-  {
-    id: "cabas-monogramma", name: "Cabas Monogramma", category: "bolsos", line: "monogramma", gender: "mujer", price: 14200, art: "tote", isNew: true, big: true,
-    description: "Un cabas amplio y ligero en la lona Monogramma de la casa: la SN, el diamante, la estrella y la nudillera estampados en oro. Ribetes de piel natural que se patinan con el tiempo.",
-    details: ["Lona Monogramma y piel vaquetilla", "Bolsillo interior con cremallera", "38 × 30 × 15 cm"],
-    colors: [MONO_EBANO, MONO_AVORIO],
-  },
-  {
-    id: "borsa-sessanta", name: "Borsa Sessanta", category: "bolsos", line: "monogramma", gender: "mujer", price: 19800, art: "bag", isNew: true,
-    description: "Bolso de mano estructurado en lona Monogramma con asa rígida y cierre de latón pulido a mano.",
-    details: ["Lona Monogramma", "Herrajes de latón bañado en oro", "Forro de ante", "28 × 20 × 11 cm"],
-    colors: [MONO_EBANO, MONO_BLU, MONO_AVORIO],
-  },
-  {
-    id: "malle-sessanta", name: "Malle Sessanta", category: "bolsos", line: "monogramma", gender: "unisex", price: 64000, art: "trunk",
-    description: "Baúl de viaje construido por encargo. Estructura de álamo, cantoneras de latón y cerradura numerada.",
-    details: ["Fabricación bajo pedido", "Cerradura con número de serie", "Interior acolchado en ante", "60 × 40 × 35 cm"],
-    colors: [MONO_EBANO],
-  },
-  {
-    id: "portafoglio-monogramma", name: "Portafoglio Monogramma", category: "carteras", line: "monogramma", gender: "mujer", price: 4600, art: "wallet", isNew: true, big: true,
-    description: "Cartera continental en lona Monogramma con doce ranuras y monedero con cremallera.",
-    details: ["Lona Monogramma", "12 ranuras para tarjetas", "19 × 10 cm"],
-    colors: [MONO_EBANO, MONO_AVORIO, MONO_BLU],
-  },
-  {
-    id: "portacarte-monogramma", name: "Portacarte Monogramma", category: "carteras", line: "monogramma", gender: "hombre", price: 2400, art: "wallet", isNew: true,
-    description: "Tarjetero plano de seis ranuras en lona Monogramma.",
-    details: ["Lona Monogramma", "6 ranuras", "11 × 8 cm"],
-    colors: [MONO_EBANO, MONO_BLU],
-  },
-  {
-    id: "cintura-sessanta", name: "Cintura Sessanta", category: "accesorios", line: "monogramma", gender: "hombre", price: 3400, art: "belt",
-    description: "Cinturón reversible con hebilla SN en latón cepillado.",
-    details: ["Lona Monogramma / piel lisa", "Hebilla de latón", "Ancho 35 mm"],
-    colors: [MONO_EBANO, NERO], sizes: ["80", "85", "90", "95", "100"],
-  },
-  {
-    id: "foulard-monogramma", name: "Foulard Monogramma", category: "accesorios", line: "monogramma", gender: "mujer", price: 2900, art: "scarf", isNew: true,
-    description: "Carré de sarga de seda con el Monogramma estampado a mano y bordes enrollados.",
-    details: ["100 % sarga de seda", "90 × 90 cm", "Bordes enrollados a mano"],
-    colors: [MONO_AVORIO, MONO_BLU, MONO_EBANO],
-  },
-  // ── Notte ──
-  {
-    id: "borsa-notte", name: "Borsa Notte", category: "bolsos", line: "notte", gender: "mujer", price: 18500, art: "bag", isNew: true,
-    description: "El bolso insignia de la Maison. Piel de becerro de grano fino, asa rígida y cierre de latón pulido a mano.",
-    details: ["Piel de becerro italiana", "Herrajes de latón bañado en oro", "Forro de ante", "28 × 20 × 11 cm"],
-    colors: [NERO, BORDEAUX, COGNAC],
-  },
-  {
-    id: "portafoglio-uno", name: "Portafoglio Uno", category: "carteras", line: "notte", gender: "mujer", price: 4200, art: "wallet",
-    description: "Cartera continental con doce ranuras, monedero con cremallera y la firma SN grabada en seco.",
-    details: ["Piel de grano saffiano", "12 ranuras para tarjetas", "19 × 10 cm"],
-    colors: [NERO, BORDEAUX, COGNAC],
-  },
-  {
-    id: "giacca-milano", name: "Giacca Milano", category: "pret-a-porter", line: "notte", gender: "hombre", price: 22800, art: "blazer", isNew: true, big: true,
-    description: "Americana cruzada de lana fría con hombro natural. Cortada y entretelada a mano en nuestro atelier.",
-    details: ["100 % lana virgen", "Forro de cupro", "Botones de cuerno"],
-    colors: [NERO, BLU], sizes: ["XS", "S", "M", "L", "XL"],
-  },
-  {
-    id: "abito-sera", name: "Abito Sera", category: "pret-a-porter", line: "notte", gender: "mujer", price: 31500, art: "dress",
-    description: "Vestido de noche en satén de seda con caída al bies y espalda descubierta.",
-    details: ["Satén de seda", "Corte al bies", "Cremallera invisible lateral"],
-    colors: [NERO, BORDEAUX], sizes: ["XS", "S", "M", "L"],
-  },
-  {
-    id: "decollete-luna", name: "Décolleté Luna", category: "calzado", line: "notte", gender: "mujer", price: 9600, art: "heel", big: true,
-    description: "Salón de punta afilada con tacón de aguja de 95 mm y plantilla acolchada.",
-    details: ["Charol italiano", "Tacón de 95 mm", "Suela de cuero"],
-    colors: [NERO, BORDEAUX, ROSA], sizes: SHOES_W,
-  },
-  {
-    id: "orologio-tempo", name: "Orologio Tempo", category: "relojeria", line: "notte", gender: "hombre", price: 48000, art: "watch", big: true,
-    description: "Reloj automático de caja fina en oro de 18 quilates, esfera lacada y correa de aligátor.",
-    details: ["Movimiento automático", "Caja de 38 mm", "Edición numerada"],
-    colors: [ORO, ARGENTO],
-  },
-  {
-    id: "anello-promessa", name: "Anello Promessa", category: "joyeria", line: "notte", gender: "mujer", price: 27500, art: "ring", big: true,
-    description: "Solitario con diamante talla brillante engastado a cuatro garras.",
-    details: ["Oro de 18 qt", "Diamante talla brillante", "Grabado interior de cortesía"],
-    colors: [{ name: "Oro bianco", hex: "#d8d8d6" }, ORO], sizes: RINGS,
-  },
-  {
-    id: "extrait-notte-69", name: "Extrait Notte 69", category: "fragancias", line: "notte", gender: "unisex", price: 2600, art: "perfume", big: true,
-    description: "Extracto de perfume. Iris, cuero y ámbar sobre un fondo de madera de oud.",
-    details: ["Extrait de parfum", "100 ml", "Frasco recargable en boutique"],
-    colors: [{ name: "Ambra", hex: "#b9762f" }],
-  },
-  // ── Riviera ──
-  {
-    id: "cabas-riviera", name: "Cabas Riviera", category: "bolsos", line: "riviera", gender: "mujer", price: 12600, art: "tote",
-    description: "Un cabas de lona encerada para los días de costa, con ribetes de piel natural.",
-    details: ["Lona encerada y piel vaquetilla", "Bolsillo interior con cremallera", "38 × 30 × 15 cm"],
-    colors: [SABBIA, AVORIO, SALVIA],
-  },
-  {
-    id: "portacarte-riviera", name: "Portacarte Riviera", category: "carteras", line: "riviera", gender: "hombre", price: 2100, art: "wallet",
-    description: "Tarjetero de piel granulada en los tonos de la costa.",
-    details: ["Piel de grano", "6 ranuras", "11 × 8 cm"],
-    colors: [SABBIA, BLU, SALVIA],
-  },
-  {
-    id: "giacca-riviera", name: "Giacca Riviera", category: "pret-a-porter", line: "riviera", gender: "mujer", price: 19400, art: "blazer",
-    description: "Americana desestructurada de lino y seda, ligera como una camisa.",
-    details: ["Lino y seda", "Sin forro", "Botones de nácar"],
-    colors: [AVORIO, SALVIA, ROSA], sizes: ["XS", "S", "M", "L"],
-  },
-  {
-    id: "abito-riviera", name: "Abito Riviera", category: "pret-a-porter", line: "riviera", gender: "mujer", price: 16800, art: "dress", isNew: true,
-    description: "Vestido de popelín de algodón con tirante fino y falda evasé.",
-    details: ["Popelín de algodón", "Forro de voile", "Cremallera invisible"],
-    colors: [AVORIO, ROSA, SABBIA], sizes: ["XS", "S", "M", "L"],
-  },
-  {
-    id: "mocassino-conte", name: "Mocassino Conte", category: "calzado", line: "riviera", gender: "hombre", price: 8900, art: "loafer",
-    description: "Mocasín de antifaz cosido a mano, suela de cuero y horma italiana.",
-    details: ["Piel de becerro pulida", "Suela de cuero cosida Blake", "Hecho a mano"],
-    colors: [COGNAC, NERO, SABBIA], sizes: SHOES_M,
-  },
-  {
-    id: "occhiali-capri", name: "Occhiali Capri", category: "accesorios", line: "riviera", gender: "unisex", price: 3800, art: "sunglasses",
-    description: "Gafas de sol de acetato pulido con lentes minerales y varillas con la firma grabada.",
-    details: ["Acetato italiano", "Lentes minerales con protección UV", "Incluye estuche de piel"],
-    colors: [{ name: "Havana", hex: "#6b4423" }, NERO],
-  },
-  {
-    id: "orologio-riviera", name: "Orologio Riviera", category: "relojeria", line: "riviera", gender: "mujer", price: 36500, art: "watch", isNew: true,
-    description: "Reloj de 32 mm con esfera de nácar y correa de piel intercambiable.",
-    details: ["Movimiento de cuarzo", "Caja de 32 mm", "Esfera de nácar"],
-    colors: [ORO, ROSA, ARGENTO],
-  },
-  {
-    id: "anello-sigillo", name: "Anello Sigillo", category: "joyeria", line: "riviera", gender: "hombre", price: 9800, art: "ring",
-    description: "Sello con la SN grabada a buril sobre oro macizo.",
-    details: ["Oro de 18 qt", "Grabado a buril", "Personalizable por encargo"],
-    colors: [ORO, ARGENTO], sizes: RINGS,
-  },
-  {
-    id: "eau-riviera", name: "Eau Riviera", category: "fragancias", line: "riviera", gender: "unisex", price: 1900, art: "perfume", isNew: true,
-    description: "Agua de perfume. Bergamota, sal marina y flor de azahar.",
-    details: ["Eau de parfum", "100 ml", "Frasco recargable en boutique"],
-    colors: [{ name: "Acqua", hex: "#bcd3d6" }, ROSA],
-  },
-];
+/** Lee el contenido publicado en Supabase. null si no hay nada publicado o no se puede leer. */
+export async function fetchPublishedContent(): Promise<unknown | null> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/sn_content?id=eq.${CONTENT_ROW}&select=data`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Accept: "application/json" },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!response.ok) return null;
+    const rows = await response.json();
+    return Array.isArray(rows) && rows[0]?.data ? rows[0].data : null;
+  } catch {
+    return null;
+  }
+}
 
 export const getProduct = (id: string) => products.find((product) => product.id === id);
 export const getCategory = (slug: string) => categories.find((category) => category.slug === slug);
