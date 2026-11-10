@@ -188,6 +188,14 @@ function Editor({ session }: { session: Session }) {
     setStatus({ kind: "ok", text: "Publicado. Los cambios ya están en la tienda." });
   };
 
+  const changePassword = async () => {
+    const password = window.prompt("Nueva contraseña (mínimo 8 caracteres):");
+    if (password === null) return;
+    if (password.length < 8) { setStatus({ kind: "error", text: "La contraseña debe tener al menos 8 caracteres." }); return; }
+    const { error } = await supabase.auth.updateUser({ password });
+    setStatus(error ? { kind: "error", text: `No se pudo cambiar la contraseña: ${error.message}` } : { kind: "ok", text: "Contraseña cambiada." });
+  };
+
   const preview = () => {
     const clean = normalizeContent(draft);
     if (!clean) { setStatus({ kind: "error", text: "El borrador tiene errores y no se puede previsualizar." }); return; }
@@ -209,6 +217,7 @@ function Editor({ session }: { session: Session }) {
           <button className="at-btn" onClick={preview}>Vista previa</button>
           <button className="at-btn" onClick={discard} disabled={!dirty}>Descartar</button>
           <button className="at-btn at-btn-solid" onClick={() => void publish()} disabled={!dirty || status.kind === "busy"}>Publicar</button>
+          <button className="at-btn" onClick={() => void changePassword()}>Contraseña</button>
           <button className="at-btn" onClick={() => void supabase.auth.signOut()}>Salir</button>
         </div>
       </header>
