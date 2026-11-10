@@ -54,6 +54,9 @@ Todo está en [`shared/catalog.ts`](shared/catalog.ts): categorías, productos, 
 Para usar fotos (por ejemplo capturas del juego), guárdalas en `public/images/` y añade
 `image: "/images/mi-foto.jpg"` al producto; si no hay foto se muestra la ilustración de la casa.
 
+La **portada** se configura en el mismo archivo (`hero`): texto, enlace y foto a pantalla completa
+(`image: "/images/portada.jpg"`). Sin foto se muestra el monograma de la casa.
+
 ## Despliegue
 
 Pensado para **Vercel**: importa el repositorio, añade las variables de entorno y despliega.

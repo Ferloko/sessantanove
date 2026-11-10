@@ -10,6 +10,7 @@ const Icon = ({ children }: { children: ReactNode }) => (
 const MenuIcon = () => <Icon><path d="M3 8h18M3 16h18" /></Icon>;
 const SearchIcon = () => <Icon><circle cx="11" cy="11" r="6.5" /><path d="m16 16 5 5" /></Icon>;
 const BagIcon = () => <Icon><path d="M5 8h14l-1 13H6L5 8Z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></Icon>;
+const HeartIcon = () => <Icon><path d="M12 20.5 4.6 13a4.7 4.7 0 0 1 0-6.7 4.8 4.8 0 0 1 6.8 0l.6.6.6-.6a4.8 4.8 0 0 1 6.8 0 4.7 4.7 0 0 1 0 6.7L12 20.5Z" /></Icon>;
 const CloseIcon = () => <Icon><path d="M5 5l14 14M19 5 5 19" /></Icon>;
 
 /** Bloquea el scroll, cierra con Escape y devuelve el foco al cerrar. */
@@ -126,7 +127,7 @@ function BagPanel() {
 
 export function Header() {
   const [location] = useLocation();
-  const { count, setOpen } = useCart();
+  const { count, setOpen, wishlist } = useCart();
   const [menu, setMenu] = useState(false);
   const [search, setSearch] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -149,9 +150,10 @@ export function Header() {
         </div>
         <Link href="/" className="wordmark" aria-label="Sessanta Nove, inicio">Sessanta Nove</Link>
         <div className="header-side header-side-end">
-          <a href="/#maison" className="header-btn header-text">La Maison</a>
+          <a href="#contacto" className="header-btn header-text">Contacto</a>
+          <Link href="/favoritos" className="header-btn" aria-label={`Favoritos, ${wishlist.length} piezas`}><HeartIcon /></Link>
           <button className="header-btn" onClick={() => setOpen(true)} aria-label={`Abrir bolsa, ${count} artículos`}>
-            <BagIcon />{count > 0 && <span className="bag-count">{count}</span>}
+            <BagIcon /><span className="bag-count">{count}</span>
           </button>
         </div>
       </header>
@@ -162,6 +164,7 @@ export function Header() {
           <Link href="/coleccion" className="menu-link">Todo</Link>
           {categories.map((category) => <Link key={category.slug} href={`/coleccion/${category.slug}`} className="menu-link">{category.name}</Link>)}
           <span className="eyebrow menu-gap">La casa</span>
+          <Link href="/favoritos" className="menu-link menu-link-sm">Favoritos</Link>
           <a href="/#maison" className="menu-link menu-link-sm" onClick={() => setMenu(false)}>La Maison</a>
           <a href="/#servicios" className="menu-link menu-link-sm" onClick={() => setMenu(false)}>Servicios</a>
         </nav>
@@ -186,8 +189,8 @@ export function Footer() {
           <a href="/#servicios">Servicios</a>
           <Link href="/coleccion">Boutique en línea</Link>
         </div>
-        <div>
-          <span className="eyebrow">Atención al cliente</span>
+        <div id="contacto">
+          <span className="eyebrow">Contacto</span>
           <p>Nuestros asesores atienden cada pedido personalmente tras la compra.</p>
           <p>Pago seguro mediante Fleeca Bank.</p>
         </div>

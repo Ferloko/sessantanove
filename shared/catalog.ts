@@ -42,6 +42,18 @@ export interface Product {
 
 export const CURRENCY = "$";
 
+/**
+ * PORTADA. Para poner una foto a pantalla completa (p. ej. una captura del juego), guárdala en
+ * /public/images y escribe su ruta en `image` ("/images/portada.jpg"). Sin foto se muestra el monograma.
+ */
+export const hero = {
+  image: "",
+  eyebrow: "Nueva colección",
+  title: "Collezione Autunno–Inverno: el Monogramma",
+  cta: "Descubrir la colección",
+  href: "/coleccion",
+};
+
 export const categories: Category[] = [
   { slug: "bolsos", name: "Bolsos", tagline: "Marroquinería hecha a mano", art: "bag", tone: "monogram" },
   { slug: "pret-a-porter", name: "Prêt-à-porter", tagline: "Sastrería de temporada", art: "blazer", tone: "stone" },

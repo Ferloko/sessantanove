@@ -14,9 +14,12 @@ interface CartValue {
   setQty: (key: string, qty: number) => void;
   remove: (key: string) => void;
   clear: () => void;
+  wishlist: string[];
+  toggleWish: (id: string) => void;
 }
 
 const STORAGE_KEY = "sn_bag";
+const WISH_KEY = "sn_wishlist";
 const MAX_QTY = 10;
 const keyOf = (line: CartLine) => `${line.id}::${line.option ?? ""}`;
 const CartContext = createContext<CartValue | null>(null);
@@ -33,6 +36,18 @@ function load(): CartLine[] {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>(load);
   const [open, setOpen] = useState(false);
+  const [wishlist, setWishlist] = useState<string[]>(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(WISH_KEY) ?? "[]");
+      return Array.isArray(parsed) ? parsed.filter((id) => getProduct(id)) : [];
+    } catch {
+      return [];
+    }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(WISH_KEY, JSON.stringify(wishlist)); } catch { /* almacenamiento no disponible */ }
+  }, [wishlist]);
+  const toggleWish = useCallback((id: string) => setWishlist((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id])), []);
 
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(lines)); } catch { /* almacenamiento no disponible */ }
@@ -61,9 +76,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       entries,
       count: entries.reduce((sum, entry) => sum + entry.qty, 0),
       total: entries.reduce((sum, entry) => sum + entry.qty * entry.product.price, 0),
-      open, setOpen, add, setQty, remove, clear,
+      open, setOpen, add, setQty, remove, clear, wishlist, toggleWish,
     };
-  }, [lines, open, add, setQty, remove, clear]);
+  }, [lines, open, add, setQty, remove, clear, wishlist, toggleWish]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

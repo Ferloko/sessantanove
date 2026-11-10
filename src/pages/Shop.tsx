@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { categories, formatPrice, getCategory, getProduct, products, type Product } from "../../shared/catalog";
+import { categories, formatPrice, getCategory, getProduct, hero, products, type Product } from "../../shared/catalog";
 import { NotFound } from "../App";
 import { Plate, ProductPlate } from "../components/ProductArt";
 import { useCart } from "../lib/cart";
@@ -9,16 +9,51 @@ function useTitle(title: string) {
   useEffect(() => { document.title = `${title} — Sessanta Nove`; }, [title]);
 }
 
+const DARK_TONES = ["ink", "bordeaux"];
+
+function WishButton({ product, className = "" }: { product: Product; className?: string }) {
+  const { wishlist, toggleWish } = useCart();
+  const on = wishlist.includes(product.id);
+  return (
+    <button type="button" className={`wish ${on ? "is-on" : ""} ${className}`} aria-pressed={on} aria-label={`${on ? "Quitar" : "Añadir"} ${product.name} ${on ? "de" : "a"} favoritos`} onClick={() => toggleWish(product.id)}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" aria-hidden="true"><path d="M12 20.5 4.6 13a4.7 4.7 0 0 1 0-6.7 4.8 4.8 0 0 1 6.8 0l.6.6.6-.6a4.8 4.8 0 0 1 6.8 0 4.7 4.7 0 0 1 0 6.7L12 20.5Z" /></svg>
+    </button>
+  );
+}
+
 function ProductCard({ product }: { product: Product }) {
   return (
-    <Link href={`/producto/${product.id}`} className="card">
-      <ProductPlate product={product} />
-      <div className="card-body">
-        {product.isNew && <span className="card-flag">Novedad</span>}
-        <span className="card-name">{product.name}</span>
-        <span className="card-price">{formatPrice(product.price)}</span>
-      </div>
-    </Link>
+    <div className="card-wrap">
+      <WishButton product={product} className={DARK_TONES.includes(product.tone) && !product.image ? "on-dark" : ""} />
+      <Link href={`/producto/${product.id}`} className="card">
+        <ProductPlate product={product} />
+        <div className="card-body">
+          {product.isNew && <span className="card-flag">Novedad</span>}
+          <span className="card-name">{product.name}</span>
+          <span className="card-price">{formatPrice(product.price)}</span>
+        </div>
+      </Link>
+    </div>
+  );
+}
+
+export function Favorites() {
+  const { wishlist } = useCart();
+  useTitle("Favoritos");
+  const list = products.filter((product) => wishlist.includes(product.id));
+  return (
+    <main className={`page ${list.length ? "" : "page-center"}`}>
+      <header className="page-head">
+        <span className="eyebrow">Tu selección</span>
+        <h1 className="display">Favoritos</h1>
+      </header>
+      {list.length ? <div className="grid">{list.map((product) => <ProductCard key={product.id} product={product} />)}</div> : (
+        <>
+          <p className="muted">Aún no has guardado ninguna pieza. Pulsa el corazón de un producto para añadirlo.</p>
+          <Link href="/coleccion" className="btn btn-outline">Descubrir la colección</Link>
+        </>
+      )}
+    </main>
   );
 }
 
@@ -34,12 +69,11 @@ export function Home() {
   return (
     <main>
       <section className="hero">
-        <div className="hero-pattern" aria-hidden="true"><div className="monogram" /></div>
+        {hero.image ? <img className="hero-image" src={hero.image} alt="" /> : <div className="hero-pattern" aria-hidden="true"><div className="monogram" /></div>}
         <div className="hero-copy">
-          <span className="eyebrow">Collezione Autunno · Inverno</span>
-          <h1 className="hero-title">L’arte di <em>farsi notare</em></h1>
-          <p>Marroquinería, sastrería y objetos firmados por la Maison.</p>
-          <Link href="/coleccion" className="btn btn-light">Descubrir la colección</Link>
+          <span className="eyebrow">{hero.eyebrow}</span>
+          <h1 className="hero-title">{hero.title}</h1>
+          <Link href={hero.href} className="link-underline">{hero.cta}</Link>
         </div>
       </section>
 
@@ -81,7 +115,7 @@ export function Home() {
       <section className="maison" id="maison">
         <div className="monogram" aria-hidden="true" />
         <span className="eyebrow">La Maison</span>
-        <p className="maison-quote">«El lujo no se anuncia. <em>Se reconoce.</em>»</p>
+        <p className="maison-quote">«El lujo no se anuncia. Se reconoce.»</p>
         <p className="maison-text">
           Sessanta Nove nació en un pequeño taller de marroquinería con una idea sencilla: hacer pocas cosas y hacerlas para siempre.
           Hoy la casa viste, calza y acompaña a quienes entienden que la elegancia está en el detalle que casi nadie ve.
@@ -162,7 +196,7 @@ export function ProductPage({ id }: { id: string }) {
             <Link href="/coleccion">Colección</Link>
             {category && <><span aria-hidden="true">/</span><Link href={`/coleccion/${category.slug}`}>{category.name}</Link></>}
           </nav>
-          <h1 className="product-name">{product.name}</h1>
+          <div className="product-head"><h1 className="product-name">{product.name}</h1><WishButton product={product} /></div>
           <p className="product-price">{formatPrice(product.price)}</p>
           <p className="product-desc">{product.description}</p>
 
